@@ -45,12 +45,8 @@ fi
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 
-# (Opcional) Instalar o tema powerlevel10k
-#if [ ! -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]; then
-#  echo -e "${YELLOW}Instalando tema powerlevel10k...${NC}"
-#  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-#    $HOME/.oh-my-zsh/custom/themes/powerlevel10k
-#fi
+#Sparship
+curl -sS https://starship.rs/install.sh | sh
 
 # Aplicando dotfiles com stow
 cd "$DOTFILES_DIR"
@@ -65,5 +61,12 @@ if [ "$SHELL" != "$(which zsh)" ]; then
   chsh -s $(which zsh)
 fi
 
+#------------
+mkdir ~/Projects
+mkdir ~/Projects/Forks # for GitHub fork
+mkdir ~/Projects/Job # for job projects
+mkdir ~/Projects/Playground # for short-term experiments
+mkdir ~/Projects/Repos # for long-term projects
+#------------
 echo -e "\n${GREEN}Instalação concluída! Reinicie o terminal ou digite 'zsh'.${NC}"
 
