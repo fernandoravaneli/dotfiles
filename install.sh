@@ -45,6 +45,9 @@ fi
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 
+#nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
 #Sparship
 curl -sS https://starship.rs/install.sh | sh
 
@@ -63,10 +66,12 @@ fi
 
 #------------
 mkdir ~/Projects
-mkdir ~/Projects/Forks # for GitHub fork
-mkdir ~/Projects/Job # for job projects
-mkdir ~/Projects/Playground # for short-term experiments
-mkdir ~/Projects/Repos # for long-term projects
+mkdir ~/Projects/Work
+mkdir ~/Projects/Personal
+# mkdir ~/Projects/Forks # for GitHub fork
+# mkdir ~/Projects/Job # for job projects
+# mkdir ~/Projects/Playground # for short-term experiments
+# mkdir ~/Projects/Repos # for long-term projects
 #------------
 echo -e "\n${GREEN}Instalação concluída! Reinicie o terminal ou digite 'zsh'.${NC}"
 

@@ -1,0 +1,7 @@
+[credential]
+    username = fernando-ravaneli
+[user]
+	name = Fernando Ravaneli
+	email = 174742968+fernando-ravaneli@users.noreply.github.com
+[core]
+    sshCommand = ssh -i ~/.ssh/github-fernando-work -o IdentitiesOnly=yes

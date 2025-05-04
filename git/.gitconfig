@@ -1,5 +1,13 @@
+[includeIf "gitdir:~/Projects/Work/"]
+	path = ~/.gitconfig-work
+[includeIf "gitdir:~/Projects/Personal/"]
+	path = ~/.gitconfig-personal
 [init]
 	defaultBranch = main
-[user]
-	name = Fernando Ravaneli
-	email = 52247525+fernandoravaneli@users.noreply.github.com
+[pull]
+	rebase = true
+# [core]
+	# symlinks = true
+	# ignorecase = false
+#[commit]
+#	gpgsign = true

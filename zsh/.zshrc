@@ -70,7 +70,10 @@ zstyle ':omz:update' mode auto      # update automatically without asking
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-syntax-highlighting zsh-autosuggestions)
+plugins=(git zsh-syntax-highlighting zsh-autosuggestions ssh-agent)
+
+# zstyle :omz:plugins:ssh-agent agent-forwarding yes
+zstyle :omz:plugins:ssh-agent identities github-fernando-personal github-fernando-work
 
 source $ZSH/oh-my-zsh.sh
 
@@ -127,3 +130,11 @@ alias ls="eza --all --icons=always"
 
 eval "$(starship init zsh)"
 
+
+# pnpm
+export PNPM_HOME="/home/fernando/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
