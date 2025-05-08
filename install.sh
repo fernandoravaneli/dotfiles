@@ -242,9 +242,6 @@ apply_dotfiles() {
   done
 }
 
-
-
-
 finalize_setup() {
   mkdir -p ~/projects/{work,personal}
   if [[ "$INSTALL_ZSH" = true || "$INSTALL_ALL" = true ]] && [[ "$SHELL" != "$(which zsh)" ]]; then
@@ -273,6 +270,10 @@ install_git_kit() {
         echo -e "  ${RED}❌ Chave não encontrada: $key${NC}"
       else
         echo -e "  ${GREEN}✔️  Chave encontrada: $key${NC}"
+        if [ "$(stat -c "%a" "$key")" != "600" ]; then
+          echo -e "  ${YELLOW}⚠️  Ajustando permissões para $key...${NC}"
+          chmod 600 "$key"
+        fi
       fi
     done
 }
