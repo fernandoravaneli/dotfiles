@@ -246,7 +246,7 @@ apply_dotfiles() {
 
 
 finalize_setup() {
-  mkdir -p ~/Projects/{Work,Personal}
+  mkdir -p ~/projects/{work,personal}
   if [[ "$INSTALL_ZSH" = true || "$INSTALL_ALL" = true ]] && [[ "$SHELL" != "$(which zsh)" ]]; then
     echo -e "\n${YELLOW}Trocando shell padrão para zsh...${NC}"
     echo -e "${YELLOW}⚠️  Você pode precisar reiniciar o terminal para aplicar as mudanças ou digite 'zsh'.${NC}"
