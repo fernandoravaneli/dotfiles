@@ -4,4 +4,4 @@
 	name = Fernando Ravaneli
 	email = 174742968+fernando-ravaneli@users.noreply.github.com
 [core]
-    sshCommand = ssh -i ~/.ssh/github-fernando-work -o IdentitiesOnly=yes
+    sshCommand = ssh -i ~/.ssh/github-work -o IdentitiesOnly=yes

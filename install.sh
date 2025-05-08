@@ -82,22 +82,42 @@ update_if_needed() {
   echo "$TODAY" > "$CACHE_FILE"
 }
 
-
 install_common_packages() {
- update_if_needed
+  update_if_needed
 
-  echo -e "${YELLOW}📦 Instalando pacotes essenciais (git, curl, stow)...${NC}"
   PACKAGES=(git curl stow)
-  sudo apt install -y "${PACKAGES[@]}"
+  TO_INSTALL=()
+  echo -e "\n"
+
+  for pkg in "${PACKAGES[@]}"; do
+    if dpkg -s "$pkg" &>/dev/null; then
+      echo -e "${GREEN}✔️ $pkg já está instalado.${NC}"
+    else
+      TO_INSTALL+=("$pkg")
+    fi
+  done
+
+  echo -e "\n"
+
+  if [ "${#TO_INSTALL[@]}" -gt 0 ]; then
+    echo -e "${YELLOW}📦 Instalando pacotes essenciais: ${TO_INSTALL[*]}...${NC}"
+    sudo apt install -y "${TO_INSTALL[@]}"
+  else
+    echo -e "${GREEN}✔️ Todos os pacotes essenciais já estão instalados.${NC}"
+  fi
 }
 
 install_zsh() {
+  if command -v zsh >/dev/null 2>&1; then
+    echo -e "\n${GREEN}✔️ ZSH já está instalado.${NC}"
+    return
+  fi
+
   update_if_needed
 
   echo -e "${YELLOW}📦 Instalando ZSH...${NC}"
   sudo apt install -y zsh
 }
-
 
 install_ohmyzsh() {
   if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -106,7 +126,7 @@ install_ohmyzsh() {
     export KEEP_ZSHRC=yes
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   else
-    echo -e "${GREEN}Oh-my-zsh já está instalado.${NC}"
+    echo -e "\n${GREEN}✔️ Oh-my-zsh já está instalado.${NC}"
   fi
 }
 
@@ -136,12 +156,11 @@ install_lazy_git() {
 }
 
 install_eza() {
-  echo -e "\n${YELLOW}🔧 Instalando EZA (substituto do ls)...${NC}"
-
   if command -v eza >/dev/null 2>&1; then
     echo -e "\n${GREEN}✔️ EZA já está instalado.${NC}"
     return
   fi
+  echo -e "\n${YELLOW}🔧 Instalando EZA (substituto do ls)...${NC}"
   sudo mkdir -p /etc/apt/keyrings
 
   if [ ! -f /etc/apt/keyrings/gierens.gpg ]; then
@@ -176,14 +195,32 @@ install_starship() {
   curl -sS https://starship.rs/install.sh | sh -s -- -y
 }
 
-
 apply_dotfiles() {
   for module in "$@"; do
     echo -e "\n${YELLOW}🔗 Aplicando dotfiles para $module...${NC}"
+
     if [ "$module" = "ssh" ]; then
       mkdir -p "$HOME/.ssh"
+      target="$HOME/.ssh/config"
+      source="$DOTFILES_DIR/ssh/.ssh/config"
+      bkp="$DOTFILES_DIR/ssh-config.backup"
+
+      if [ -e "$target" ] && [ ! -L "$target" ]; then
+        if $FORCE; then
+          echo -e "${YELLOW}⚠️  Movendo $target para $bkp${NC}"
+          mv "$target" "$bkp"
+        else
+          echo -e "${RED}❌ Conflito: $target já existe e não é um link simbólico.${NC}"
+          echo -e "${YELLOW}ℹ️  Use '--force' para sobrescrever ou mova manualmente.${NC}"
+        fi
+      fi
+
+      ln -sf "$source" "$target"
+      echo -e "${GREEN}✔️ Link criado: $target → $source${NC}"
+      continue  
     fi
 
+    # Tratamento padrão
     for file in $(find "$DOTFILES_DIR/$module" -maxdepth 1 -mindepth 1 -printf "%f\n"); do
       target="$HOME/$file"
       bkp="$DOTFILES_DIR/$file.backup"
@@ -205,9 +242,12 @@ apply_dotfiles() {
   done
 }
 
+
+
+
 finalize_setup() {
   mkdir -p ~/Projects/{Work,Personal}
-  if [ "$SHELL" != "$(which zsh)" ]; then
+  if [[ "$INSTALL_ZSH" = true || "$INSTALL_ALL" = true ]] && [[ "$SHELL" != "$(which zsh)" ]]; then
     echo -e "\n${YELLOW}Trocando shell padrão para zsh...${NC}"
     echo -e "${YELLOW}⚠️  Você pode precisar reiniciar o terminal para aplicar as mudanças ou digite 'zsh'.${NC}"
     chsh -s $(which zsh)
@@ -218,47 +258,58 @@ finalize_setup() {
 # Execução com base nas escolhas
 #--------------------------------------------------------------
 
-install_common_packages
-
-if $INSTALL_ALL || $INSTALL_ZSH; then
-install_zsh
+install_zsh_kit() {
+  install_zsh
   install_ohmyzsh
   install_zsh_plugins
   apply_dotfiles zsh
-fi
+}
 
-if $INSTALL_ALL || $INSTALL_GIT; then
+install_git_kit() {
   apply_dotfiles git ssh
-  # echo -e "\n${YELLOW}⚠️  Lembre-se de adicionar as chaves SSH:${NC}"
-  # echo -e "  ${GREEN}ssh-add ~/.ssh/github-fernando-work${NC}"
-  # echo -e "  ${GREEN}ssh-add ~/.ssh/github-fernando-personal${NC}"
-  echo -e "\n${YELLOW}🔎 Verificando se as chaves SSH estão presentes...${NC}"
-  for key in "$HOME/.ssh/github-fernando-work" "$HOME/.ssh/github-fernando-personal"; do
-    if [ ! -f "$key" ]; then
-      echo -e "  ${RED}❌ Chave não encontrada: $key${NC}"
-    else
-      echo -e "  ${GREEN}✔️  Chave encontrada: $key${NC}"
-    fi
-  done
-fi
+    echo -e "\n${YELLOW}🔎 Verificando se as chaves SSH estão presentes...${NC}"
+    for key in "$HOME/.ssh/github-work" "$HOME/.ssh/github-personal"; do
+      if [ ! -f "$key" ]; then
+        echo -e "  ${RED}❌ Chave não encontrada: $key${NC}"
+      else
+        echo -e "  ${GREEN}✔️  Chave encontrada: $key${NC}"
+      fi
+    done
+}
 
-if $INSTALL_ALL || $INSTALL_SSH; then
-  apply_dotfiles ssh
-fi
-
-if $INSTALL_ALL || $INSTALL_DEV; then
+install_dev_kit() {
   install_lazy_git
   install_eza
   install_nvm
   install_starship
+}
+
+#----------------------------
+
+install_common_packages
+
+if $INSTALL_ZSH; then
+  install_zsh_kit
+fi
+
+if $INSTALL_GIT; then
+  install_git_kit
+fi
+
+if [ "$INSTALL_SSH" = true ] && [ "$INSTALL_GIT" != true ]; then
+  apply_dotfiles ssh
+fi
+
+if $INSTALL_DEV; then
+ install_dev_kit
 fi
 
 if $INSTALL_ALL; then
-  apply_dotfiles zsh git ssh
+  install_zsh_kit
+  install_git_kit
+  install_dev_kit
 fi
 
-if $INSTALL_ALL || ($INSTALL_ZSH && $INSTALL_GIT && $INSTALL_DEV); then
-  finalize_setup
-fi
+finalize_setup
 
 echo -e "\n${GREEN}✅ Pronto. Instalação finalizada.${NC}"

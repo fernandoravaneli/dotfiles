@@ -73,7 +73,7 @@ zstyle ':omz:update' mode auto      # update automatically without asking
 plugins=(git zsh-syntax-highlighting zsh-autosuggestions ssh-agent)
 
 # zstyle :omz:plugins:ssh-agent agent-forwarding yes
-zstyle :omz:plugins:ssh-agent identities github-fernando-personal github-fernando-work
+zstyle :omz:plugins:ssh-agent identities github-personal github-work
 
 source $ZSH/oh-my-zsh.sh
 
@@ -129,7 +129,6 @@ alias ls="eza --all --icons=always"
 #-----------------------------
 
 eval "$(starship init zsh)"
-
 
 # pnpm
 export PNPM_HOME="/home/fernando/.local/share/pnpm"
